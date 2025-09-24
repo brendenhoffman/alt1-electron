@@ -1,5 +1,6 @@
 import * as a1lib from "alt1";
 import { IpcMain, IpcMainEvent, IpcMainInvokeEvent, screen } from "electron/main"
+import { BrowserWindow } from "electron";
 import { sameDomainResolve } from "./lib";
 import { admins, fixTooltip, getManagedAppWindow, ManagedWindow, openApp } from "./main";
 import { native } from "./native";
@@ -19,11 +20,16 @@ function expectAppWindow(e: IpcMainEvent | IpcMainInvokeEvent) {
 }
 
 function expectPermittedRsClient(e: IpcMainEvent | IpcMainInvokeEvent) {
-	let wnd = getManagedAppWindow(e.sender.id);
-	if (wnd) { return wnd.rsClient; }
-	if (admins.has(e.sender.id)) {
+	const win = BrowserWindow.fromWebContents(e.sender);
+	let wnd = win ? getManagedAppWindow(win.id) : undefined;
+	if (wnd) {
+		return wnd.rsClient;
+	}
+	if (win && admins.has(win.id)) {
 		let instance = rsInstances[0];
-		if (!instance) { throw new Error("no rs clients bound"); }
+		if (!instance) {
+			throw new Error("no rs clients bound");
+		}
 		return instance;
 	}
 	throw new Error("Browser context has no permitted RS Client");
