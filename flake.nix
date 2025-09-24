@@ -83,7 +83,7 @@
 
           yarnOfflineCache = pkgs.fetchYarnDeps {
             yarnLock = "${finalAttrs.src}" + "/yarn.lock";
-            hash = "sha256-Nypb0O3fkTBbj5k74FOOhd739uscLM5H3YQQj2RBnGg=";
+            hash = "sha256-QecHjsz6R/tP+X93WopetT+pIrEMeMrTBWGSY6pyEOI=";
           };
 
           env = {
