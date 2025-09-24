@@ -70,7 +70,12 @@ function getRsInfo() {
 		lastRsInfo = info;
 		lastRsInfoTime = Date.now();
 	}
-	if (info.error != undefined) { throw new Error(info.error); }
+	if (info.error != undefined) {
+		if (lastRsInfoTime == 0) {
+			return getRsInfo();
+		}
+		throw new Error(info.error);
+	}
 	return info.value;
 }
 
