@@ -105,9 +105,7 @@ class ManagedSettings extends TypedEmitter<SettingsEvents> {
 	 * Called on top-level, where await is not possible. Default settings are loaded in the background.
 	 */
 	loadOrFetch() {
-		console.log("Reading from path");
-		console.log(this.path);
-		console.log("configfile");
+		console.log("Reading from path: ", this.path);
 		try {
 			let file = JSON.parse(fs.readFileSync(this.path, "utf8"));
 			this.settings = checkSettings.load(file, { defaultOnError: true });
