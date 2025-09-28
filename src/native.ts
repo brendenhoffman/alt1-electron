@@ -33,9 +33,12 @@ export function reloadAddon() {
 	let origfile = path.resolve(addonpath, "addon.node");
 	//Copy the addon file so we can rebuild while alt1lite is already running
 	if (process.env.NODE_ENV === "development") {
-		console.log(process.env.NODE_ENV);
 		addonpath = path.resolve(__dirname, "../build/Debug/");
 		origfile = path.resolve(addonpath, "addon.node");
+		if (!fs.existsSync(origfile)) {
+			addonpath = path.resolve(__dirname, "../build/Release/");
+			origfile = path.resolve(addonpath, "addon.node");
+		}
 		let tmpfile = path.resolve("/tmp/", "alt1_addon" + Math.floor(Math.random() * 1000) + ".node");
 		fs.copyFileSync(origfile, tmpfile);
 		addonpath = tmpfile;

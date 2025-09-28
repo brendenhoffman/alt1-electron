@@ -168,13 +168,13 @@
             '';
           });
       in {
-        packages.default = makeAlt1lite "release";
-        apps.default = {
+        packages.default = makeAlt1lite "debug";
+        apps.release = {
           type = "app";
           program = "${makeAlt1lite "release"}/bin/alt1lite";
         };
 
-        apps.debug = {
+        apps.default = {
           type = "app";
           program = "${makeAlt1lite "debug"}/bin/alt1lite";
         };
