@@ -2,7 +2,6 @@
 #include <memory>
 #include <iostream>
 #include <napi.h>
-#include <proc/readproc.h>
 #include <xcb/composite.h>
 #include <xcb/record.h>
 #include <xcb/shape.h>

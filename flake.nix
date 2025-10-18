@@ -8,16 +8,8 @@
     flake-utils.lib.eachDefaultSystem (system:
       let
         pkgs = nixpkgs.legacyPackages.${system};
-        procpsOrig = pkgs.procps.overrideAttrs (oldAttrs: {
-          version = "3.3.17";
-          src = pkgs.fetchurl {
-            url = "mirror://sourceforge/procps-ng/procps-ng-3.3.17.tar.xz";
-            hash = "sha256-RRiz56r9NOwH0AY9JQ/UdJmbILIAIYw65W9dIRPxQbQ=";
-          };
-        });
 
         x11Deps = with pkgs; [
-          procpsOrig
           pkg-config
           xorg.libxcb
           xorg.xcbutilwm
@@ -64,7 +56,6 @@
           pkgs.libglvnd
           pkgs.libudev0-shim
           pkgs.nodejs
-          pkgs.procps
           pkgs.pkg-config
           pkgs.gcc
 
