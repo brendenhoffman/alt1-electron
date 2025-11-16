@@ -1,4 +1,39 @@
 
+This is a fork! Contains some fixes for my personal setup. For any questions or bugs you'd like to see fixed, refer to the original github repo or discord. You can also message me directly on discord to `arrowsin`.
+
+## Wayland
+If you're using wayland, the compositor is unaware of any positioning that `alt1-electron` does or tries to do, due to the wayland devs not wanting windows to determine their own position, instead leaving it to the user.
+
+I'm personally using hyprland, and I use these windowrules:
+```
+windowrulev2=tag +alt1app, title:^(Alt1 Lite app)$
+windowrulev2=nomaxsize, tag:alt1app
+windowrulev2=float, tag:alt1app
+windowrulev2=noblur, tag:alt1app
+windowrulev2=noinitialfocus, tag:alt1app
+windowrulev2=noborder, tag:alt1app
+windowrulev2=immediate, tag:alt1app
+windowrulev2=allowsinput, tag:alt1app
+windowrulev2=tag +alt1overlay, title:^(Alt1Lite overlay window)$
+windowrulev2=nofocus, tag:alt1overlay
+windowrulev2=noinitialfocus, tag:alt1overlay
+windowrulev2=nofollowmouse, tag:alt1overlay
+windowrulev2=noblur, tag:alt1overlay
+windowrulev2=noborder, tag:alt1overlay
+windowrulev2=fullscreenstate -1 2, tag:alt1overlay
+windowrulev2=size 2560 1390, tag:alt1overlay
+windowrulev2=persistentsize, tag:alt1overlay
+windowrulev2=suppressevent activate activatefocus fullscreen, tag:alt1overlay
+windowrulev2=renderunfocused, tag:alt1overlay
+windowrulev2=workspace 1, tag:alt1overlay
+windowrulev2=tile, class:^(rs2client.exe)$
+windowrulev2=workspace 1, class:^(rs2client.exe)$
+windowrulev2=idleinhibit always, class:^(rs2client.exe)$
+windowrulev2=renderunfocused, class:^(runescape.exe)$
+```
+
+There is also one bug with the Runescape launcher when using (x)wayland, as it keeps open its launcher window (the one with the loading progress bar), which is only visible to xwayland and not to wayland. There is one workaround for this in commit c9e83c3, which checks for a window with the exact same window title and class as the 'real' Runescape client, but with a fixed size of 720x480. DO NOT RESIZE THE LAUNCHER WINDOW AND DO NOT RESIZE YOUR CLIENT TO 720x480, this will break alt1-electron. Without the workaround, alt1-electron will hook onto both the real client and the phantom window, causing it to fail as the phantom window does not have any rs information.
+
 # Alt1 Electron (name pending)
 This project is an experimental rewrite of the Alt1 Toolkit in Typescript, Electron and React. The project is currently in an experimental state, it is not clear yet if this could become a replacement for C# Alt1.
 
