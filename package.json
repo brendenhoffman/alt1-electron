@@ -4,7 +4,7 @@
 	"description": "Lightweight cross-platform client for Alt1 Toolkit apps",
 	"main": "index.ts",
 	"scripts": {
-		"build": "node --experimental-strip-types ./node_modules/webpack/bin/webpack.js",
+		"build": "node --experimental-strip-types ./node_modules/webpack/bin/webpack.js --disable-interpret",
 		"release": "npm run build -- -p",
 		"watch": "npm run build -- --watch",
 		"ui": "electron --inspect=9228 ./dist/alt1lite.bundle.js",
@@ -41,7 +41,7 @@
 		"ts-loader": "^8.0.14",
 		"typescript": "^5.7.3",
 		"url-loader": "^4.1.1",
-		"webpack-cli": "^4.9.2",
+		"webpack-cli": "^5.1.4",
 		"webpack-node-externals": "^2.5.2"
 	},
 	"dependencies": {
