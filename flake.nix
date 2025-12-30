@@ -56,7 +56,7 @@
 
         electronDeps = with pkgs;
           [ vips nodejs (python311.withPackages (ps: [ ps.distutils ])) ]
-          ++ x11Deps ++ devDeps;
+          ++ x11Deps;
 
         makeAlt1lite = variant:
           pkgs.stdenv.mkDerivation (finalAttrs: {
@@ -100,23 +100,10 @@
               pkgs.npmHooks.npmBuildHook
               pkgs.npmHooks.npmInstallHook
               pkgs.nodejs
-              pkgs.typescript
               pkgs.pkg-config
               pkgs.makeWrapper
-              pkgs.vips
-              pkgs.glib.dev
-              pkgs.vips.dev
               (pkgs.python311.withPackages (ps: [ ps.distutils ]))
             ];
-
-            preConfigure = ''
-              export npm_config_target=${pkgs.electron.version}
-              export npm_config_runtime=electron
-              export npm_config_disturl=https://electronjs.org/headers
-              export npm_config_arch=x64
-              export npm_config_platform=linux
-              export npm_config_build_from_source=true
-            '';
 
             buildPhase = ''
               runHook preBuild
