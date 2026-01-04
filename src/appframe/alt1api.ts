@@ -65,34 +65,48 @@ let lastRsInfo: SyncResponse<RsClientState> = null!;
 let lastRsInfoTime = 0;
 function getRsInfo() {
 	let info = lastRsInfo;
-	if (lastRsInfoTime < Date.now() - 500) {
+	if (lastRsInfoTime < Date.now() - 100) { // Decreased from 500ms to sync faster than plugin timers. Slightly experimental.
 		info = ipcRenderer.sendSync("rsbounds");
 		lastRsInfo = info;
 		lastRsInfoTime = Date.now();
 	}
+
 	if (info.error != undefined) {
-		if (lastRsInfoTime == 0) {
-			return getRsInfo();
+		// Retry permissions to rule out race conditions.
+		// This shouldn't ever fail with a bound client, and won't run if the game isn't open.
+		if (String(info.error).includes("no permitted RS Client") || String(info.error).includes("not bound")) {
+			lastRsInfoTime = 0;
+			let retry = ipcRenderer.sendSync("rsbounds");
+			lastRsInfo = retry;
+			lastRsInfoTime = Date.now();
+			if (retry.error == undefined) return retry.value;
 		}
 		throw new Error(info.error);
 	}
+
 	return info.value;
 }
 
 let boundImage: FlatImageData & { x: number, y: number } | null = null;
 let overlayDebounceCommands: OverlayCommand[] = [];
-let overlayDebounced = false;
+let overlayFlushTimer: NodeJS.Timeout | null = null;
+
 function queueOverlayCommand(command: OverlayCommand) {
-	overlayDebounceCommands.push(command);
-	if (!overlayDebounced) {
-		setImmediate(sendOverlayQueue);
-		overlayDebounced = true;
-	}
+  overlayDebounceCommands.push(command);
+
+  if (!overlayFlushTimer) {
+	overlayFlushTimer = setTimeout(() => {
+	  sendOverlayQueue();
+	  overlayFlushTimer = null;
+	}, 16); // ~1 frame at 60Hz
+  }
 }
+
 function sendOverlayQueue() {
-	ipcRenderer.send("overlay", overlayDebounceCommands)
-	overlayDebounced = false;
-	overlayDebounceCommands = [];
+  if (overlayDebounceCommands.length === 0) return;
+
+  ipcRenderer.send("overlay", overlayDebounceCommands);
+  overlayDebounceCommands = [];
 }
 
 function setTooltip(text: string) {

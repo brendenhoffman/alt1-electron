@@ -31,7 +31,7 @@ function AppFrame(p: {}) {
 	useLayoutEffect(() => {
 		let view = document.createElement("webview");
 		view.className = "appframe";
-		view.preload = "./alt1api.bundle.js";
+		view.preload = new URL("./alt1api.bundle.js", window.location.href).pathname;
 		view.allowpopups = true;
 		view.nodeintegration = false;
 		view.nodeintegrationinsubframes = false;

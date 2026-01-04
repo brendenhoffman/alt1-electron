@@ -12,32 +12,37 @@ const snapdistance = 10;
 const snapcornerlength = 30;
 const snapthresh = 140;
 
+function getHostWebContentsId(e: IpcMainEvent | IpcMainInvokeEvent) {
+	const hostWc = (e.sender as any).hostWebContents ?? e.sender;
+	return hostWc.id as number;
+}
+
 function expectAppWindow(e: IpcMainEvent | IpcMainInvokeEvent) {
-	let wnd = getManagedAppWindow(e.sender.id);
-	if (!wnd) { throw new Error("App context not found"); }
-	//TODO check if e.senderFrame.url is same origin as appconfig
+	const id = getHostWebContentsId(e);
+	const wnd = getManagedAppWindow(id);
+	if (!wnd) throw new Error("App context not found");
 	return wnd;
 }
 
 function expectPermittedRsClient(e: IpcMainEvent | IpcMainInvokeEvent) {
-	const win = BrowserWindow.fromWebContents(e.sender);
-	let wnd = win ? getManagedAppWindow(win.id) : undefined;
-	if (wnd) {
-		return wnd.rsClient;
-	}
-	if (win && admins.has(win.id)) {
-		let instance = rsInstances[0];
-		if (!instance) {
-			throw new Error("no rs clients bound");
-		}
+	const id = getHostWebContentsId(e);
+	const wnd = getManagedAppWindow(id);
+	if (wnd?.rsClient) return wnd.rsClient;
+
+	if (admins.has(id)) {
+		const instance = rsInstances[0];
+		if (!instance) throw new Error("no rs clients bound");
 		return instance;
 	}
+
 	throw new Error("Browser context has no permitted RS Client");
 }
 
 function isAdmin(e: IpcMainEvent | IpcMainInvokeEvent) {
-	return admins.has(e.sender.id);
+	const id = getHostWebContentsId(e);
+	return admins.has(id);
 }
+
 
 function detectCornerEdge(img: FlatImageData, rect: a1lib.Rect, hor: boolean, reverse: boolean, thresh: number) {
 	if (!hor) {
@@ -207,6 +212,11 @@ function syncwrap(fn: (e: Electron.IpcMainEvent, ...args: any[]) => any) {
 	}
 }
 
+function getHostBrowserWindow(e: IpcMainEvent | IpcMainInvokeEvent) {
+	const hostWc = (e.sender as any).hostWebContents ?? e.sender;
+	return BrowserWindow.fromWebContents(hostWc);
+}
+
 export function initIpcApi(ipcMain: IpcMain) {
 	ipcMain.on("identifyapp", async (e, configurl) => {
 		try {
@@ -228,18 +238,30 @@ export function initIpcApi(ipcMain: IpcMain) {
 	});
 
 	ipcMain.on("rsbounds", syncwrap((e) => {
-		let client = expectPermittedRsClient(e);
-		let mousePos = client.overlayWindow?.pin?.getMousePos();
-		let state: RsClientState = {
+		const client = expectPermittedRsClient(e);
+		const cur = native.getCursorScreenPoint?.() ?? screen.getCursorScreenPoint();
+		const r = client.window.getClientBounds();
+
+		// screen -> rs client coords
+		const mx = cur.x - r.x;
+		const my = cur.y - r.y;
+
+		const mousePosition =
+			(mx >= 0 && my >= 0 && mx < r.width && my < r.height)
+			  ? (((mx & 0xFFFF) << 16) | (my & 0xFFFF))
+			  : -1;
+
+		const state: RsClientState = {
 			active: client.isActive,
-			clientRect: client.window.getClientBounds(),
+			clientRect: r,
 			lastActiveTime: client.lastActiveTime,
-			ping: 10,//TODO
-			scaling: 1,//TODO
+			ping: 10, // TODO
+			scaling: 1, // TODO
 			captureMode: settings.captureMode,
-			mousePosition: mousePos !== undefined ? (mousePos.x << 16 | (mousePos.y & 0xFFFF)) : -1,
+			mousePosition,
 		};
-		e.returnValue = { value: state };
+
+	  e.returnValue = { value: state };
 	}));
 
 	ipcMain.handle("capture", (e: any, x: any, y: any, width: any, height: any) => {
@@ -259,9 +281,13 @@ export function initIpcApi(ipcMain: IpcMain) {
 	}));
 
 	ipcMain.on("overlay", syncwrap((e, commands: OverlayCommand[]) => {
-		//TODO errors here are not rethrown in app, just swallow and log them
-		let wnd = expectAppWindow(e);
-		wnd.rsClient.overlayCommands(wnd.appFrameId, commands);
+		const wnd = expectAppWindow(e);
+
+		const hostWin = getHostBrowserWindow(e);
+		if (!hostWin) throw new Error("No host BrowserWindow for overlay sender");
+
+		const frameid = hostWin.webContents.id;
+		wnd.rsClient.overlayCommands(frameid, commands);
 	}));
 
 	ipcMain.on("dragwindow", syncwrap((e, left, top, right, bot) => {
@@ -290,10 +316,16 @@ export function initIpcApi(ipcMain: IpcMain) {
 		}
 	});
 
-	ipcMain.handle("installapp", async (e, url) => {
-		if (isAdmin(e)) {
-			await settings.appconfig.identifyApp(new URL(url));
-		}
+	ipcMain.handle("installapp_preview", async (e, input: string) => {
+	  if (isAdmin(e)) {
+		return await settings.appconfig.previewInstall(input);
+	  }
+	});
+
+	ipcMain.handle("installapp_confirm", async (e, normalizedUrl: string) => {
+	  if (isAdmin(e)) {
+		return await settings.appconfig.confirmInstall(normalizedUrl);
+	  }
 	});
 
 	ipcMain.handle("getsettings", (e) => {
