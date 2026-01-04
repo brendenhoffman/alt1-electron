@@ -68,9 +68,9 @@
             npmDeps = pkgs.fetchNpmDeps {
               src = "${finalAttrs.src}";
               packageLock = "${finalAttrs.src}/package-lock.json";
-              hash = "sha256-ITTQvnTRkYejamomq67nrGup0dAuv7gbTXNTcMnt+Pk=";
+              hash = "sha256-XtQ5y0raiD+93yk3xqcLKyshO2/niyM62WEHYYKyC24=";
             };
-
+            makeCacheWritable = true;
             env = {
               ELECTRON_SKIP_BINARY_DOWNLOAD = "1";
               npm_config_nodedir = pkgs.electron.headers;
@@ -107,7 +107,7 @@
 
             buildPhase = ''
               runHook preBuild
-
+              export npm_config_cache="$TMPDIR/npm-cache"
               export npm_config_ignore_scripts=true
               export npm_config_runtime=electron
               export npm_config_target=${pkgs.electron.version}
