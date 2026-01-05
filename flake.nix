@@ -90,7 +90,8 @@
                 pkgs.libtiff
               ];
               doDist = false;
-              NODE_ENV = "";
+              NODE_ENV =
+                if variant == "debug" then "development" else "production";
             };
 
             buildInputs = electronDeps ++ devDeps;
@@ -118,13 +119,13 @@
                 -f \
                 -w alt1lite \
                 -c.electronDist=${pkgs.electron}/libexec/electron \
-                -c.electronVersion=${pkgs.electron.version}
+                -c.electronVersion=${pkgs.electron.version} ${
+                  pkgs.lib.optionalString (variant == "debug") "--debug"
+                }
 
-              if [ "${variant}" == "debug" ]; then
-                npm --offline run build -- --mode development
-              else
-                npm --offline run build -- --mode production
-              fi
+              npm --offline run build -- --mode ${
+                if variant == "debug" then "development" else "production"
+              }
 
               runHook postBuild
             '';
