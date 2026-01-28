@@ -23,7 +23,7 @@ jobs:
         with:
           node-version: 22
 
-      - name: Build and release alt1-electron
+      - name: Build alt1-electron
         run: |
           npm ci
           npm run build
