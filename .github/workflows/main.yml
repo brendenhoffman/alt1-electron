@@ -1,0 +1,26 @@
+name: Build/release
+
+on: push
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v1
+
+      - name: Install Node.js, NPM
+        uses: actions/setup-node@v1
+        with:
+          node-version: 22
+
+      - name: Build and release alt1-electron
+        run: |
+          npm ci
+          npm run build
+          npm run dist
