@@ -68,7 +68,7 @@
             npmDeps = pkgs.fetchNpmDeps {
               src = "${finalAttrs.src}";
               packageLock = "${finalAttrs.src}/package-lock.json";
-              hash = "sha256-XtQ5y0raiD+93yk3xqcLKyshO2/niyM62WEHYYKyC24=";
+              hash = "sha256-7MAu8j9ZRbfKeYHObVBTNDwzVIOcGyqk6icGnSQP3QA=";
             };
             makeCacheWritable = true;
             env = {
@@ -162,7 +162,8 @@
         };
 
         devShells.default = pkgs.mkShell {
-          packages = devDeps ++ electronDeps ++ x11Deps;
+          packages = devDeps ++ electronDeps ++ x11Deps
+            ++ [ pkgs.appimage-run ];
           env = {
             ELECTRON_VERSION =
               pkgs.lib.versions.majorMinor pkgs.electron.version;

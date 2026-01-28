@@ -5,6 +5,7 @@ import { Rectangle } from "./shared";
 import { boundMethod } from "autobind-decorator";
 import { TypedEmitter } from "./typedemitter";
 import { PinRect } from "./settings";
+import os from "os";
 
 export type CaptureMode = "desktop" | "window" | "opengl";
 
@@ -27,26 +28,53 @@ export var native: {
 };
 reloadAddon();
 
+function findAddon(): string {
+	const base = path.resolve(__dirname, "../build");
+	for (const type of ["Release", "Debug"]) {
+		const candidate = path.join(base, type, "addon.node");
+		if (fs.existsSync(candidate)) return candidate;
+	}
+	throw new Error("Native addon not found");
+}
+
+function getCachePath(): string {
+
+	const platform = process.platform;
+	let base: string;
+
+	if (platform === "win32") {
+		base = process.env.LOCALAPPDATA ?? os.tmpdir();
+	} else if (platform === "darwin") {
+		let home = process.env.HOME ?? os.tmpdir();
+		if (home !== os.tmpdir()) {
+			base = path.join(home, "Library", "Caches");
+		} else {
+			base = home
+		}
+	} else {
+		base = process.env.XDG_CACHE_HOME ?? os.tmpdir();
+	}
+
+	const dir = path.join(base, "alt1lite", "addons");
+	fs.mkdirSync(dir, { recursive: true });
+
+	return path.join(dir, `addon-${Date.now()}.node`);
+}
+
 //(Re)loads the native code, this gives all kinds of mem leaks and other trouble if called more than once, only do so for debugging
 export function reloadAddon() {
 	//TODO fix hardcoded build path
-	let addonpath = path.resolve(__dirname, "../build/Release/");
-	let origfile = path.resolve(addonpath, "addon.node");
+	const addon_source = process.env.NATIVE_ADDON_PATH ?? findAddon();
+
+	let addon_path = addon_source;
+
 	//Copy the addon file so we can rebuild while alt1lite is already running
 	if (process.env.NODE_ENV === "development") {
-		addonpath = path.resolve(__dirname, "../build/Debug/");
-		origfile = path.resolve(addonpath, "addon.node");
-		if (!fs.existsSync(origfile)) {
-			addonpath = path.resolve(__dirname, "../build/Release/");
-			origfile = path.resolve(addonpath, "addon.node");
-		}
-		let tmpfile = path.resolve("/tmp/", "alt1_addon" + Math.floor(Math.random() * 1000) + ".node");
-		fs.copyFileSync(origfile, tmpfile);
-		addonpath = tmpfile;
-	} else {
-		addonpath = origfile;
+		const tmp = getCachePath();
+		fs.copyFileSync(addon_source, tmp);
+		addon_path = tmp;
 	}
-	native = __non_webpack_require__(addonpath);
+	native = __non_webpack_require__(addon_path);
 }
 
 type windowEvents = {
