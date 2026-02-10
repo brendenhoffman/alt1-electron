@@ -1,0 +1,32 @@
+name: Build/release
+
+on: push
+
+jobs:
+  release:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+
+    steps:
+      - name: Check out Git repository
+        uses: actions/checkout@v1
+
+      - name: Install dependencies
+        run: sudo apt install pkg-config libxcb-shm0-dev libxcb-composite0-dev libxcb-ewmh-dev libxcb-record0-dev libxcb-shape0-dev
+        if: matrix.os == 'ubuntu-latest'
+
+      - name: Install Node.js, NPM
+        uses: actions/setup-node@v1
+        with:
+          node-version: 22
+
+      - name: Build alt1-electron
+        run: |
+          npm ci
+          npm run build
+          npm run dist
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
