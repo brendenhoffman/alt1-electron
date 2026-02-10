@@ -65,9 +65,9 @@
 			"output": "release"
 		},
 		"linux": {
-			"target": [
-				"AppImage"
-			]
+			"target": ["AppImage"],
+			"icon": "dist/f08be1c76894ec8692310dad17bc4068.png",
+			"category": "Utility"
 		},
 		"win": {
 			"target": [
