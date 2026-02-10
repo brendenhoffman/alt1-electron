@@ -9,7 +9,7 @@
 	"scripts": {
 		"build": "webpack --config ./webpack.config.cjs",
 		"dist": "npm run dist:$(node -p \"process.platform\")",
-		"dist:linux": "electron-builder -l",
+		"dist:linux": "electron-builder -l --publish ${CI:+always}",
 		"dist:darwin": "electron-builder -m",
 		"dist:win32": "electron-builder -w",
 		"install": "npm run native",
