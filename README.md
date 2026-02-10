@@ -178,3 +178,5 @@ Direct access to JS runtime and memory of arraybuffers is now possible. Possibly
 
 ### Different app styles
 Support for Guide style apps that are easy to minimize and take up the center screen. In 2019, RS Pocketbook was interested in merging into Alt1 like this, others are also possible.
+
+test
