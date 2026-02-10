@@ -32,6 +32,7 @@ jobs:
       - name: Build alt1-electron
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: github.ref == 'refs/heads/arroquw-dev'
         run: |
           npm ci
           npm run build
