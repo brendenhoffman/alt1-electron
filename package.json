@@ -66,7 +66,7 @@
 		},
 		"linux": {
 			"target": ["AppImage"],
-			"icon": "dist/f08be1c76894ec8692310dad17bc4068.png",
+			"icon": "src/imgs/alt1icon_large.png",
 			"category": "Utility"
 		},
 		"win": {
