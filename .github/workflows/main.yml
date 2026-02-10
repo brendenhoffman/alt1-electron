@@ -29,23 +29,10 @@ jobs:
         with:
           node-version: 24
 
-      - name: Build + publish
+      - name: Build alt1-electron
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-      
-          OWNER="${GITHUB_REPOSITORY_OWNER}"
-          REPO="${GITHUB_REPOSITORY#*/}"
-      
-          cat > electron-builder.ci.yml <<EOF
-          publish:
-            - provider: github
-              owner: ${OWNER}
-              repo: ${REPO}
-          EOF
-      
           npm ci
           npm run build
-          npx electron-builder -l --publish always --config electron-builder.ci.yml
-
+          npx electron-builder -l --publish always --config electron-builder.ci.cjs
