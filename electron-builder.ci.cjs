@@ -14,7 +14,7 @@ module.exports = {
 		provider: "github",
 		owner,
 		repo,
-		releaseType: "release"
+		releaseType: "prerelease"
 	},
 	],
 };
